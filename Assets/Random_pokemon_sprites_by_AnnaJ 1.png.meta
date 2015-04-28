@@ -1,0 +1,330 @@
+fileFormatVersion: 2
+guid: abcd2baca06524b6dba98702277d9c75
+timeCreated: 1430072696
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: Random_pokemon_sprites_by_AnnaJ 1_0
+    21300002: Random_pokemon_sprites_by_AnnaJ 1_1
+    21300004: Random_pokemon_sprites_by_AnnaJ 1_2
+    21300006: Random_pokemon_sprites_by_AnnaJ 1_3
+    21300008: Random_pokemon_sprites_by_AnnaJ 1_4
+    21300010: Random_pokemon_sprites_by_AnnaJ 1_5
+    21300012: Random_pokemon_sprites_by_AnnaJ 1_6
+    21300014: Random_pokemon_sprites_by_AnnaJ 1_7
+    21300016: Random_pokemon_sprites_by_AnnaJ 1_8
+    21300018: Random_pokemon_sprites_by_AnnaJ 1_9
+    21300020: Random_pokemon_sprites_by_AnnaJ 1_10
+    21300022: Random_pokemon_sprites_by_AnnaJ 1_11
+    21300024: bulb1
+    21300026: bulb2
+    21300028: bulb3
+    21300030: cynd1
+    21300032: cynd2
+    21300034: cynd3
+    21300036: Random_pokemon_sprites_by_AnnaJ 1_18
+    21300038: Random_pokemon_sprites_by_AnnaJ 1_19
+    21300040: Random_pokemon_sprites_by_AnnaJ 1_20
+    21300042: Random_pokemon_sprites_by_AnnaJ 1_21
+    21300044: Random_pokemon_sprites_by_AnnaJ 1_22
+    21300046: Random_pokemon_sprites_by_AnnaJ 1_23
+    21300048: Random_pokemon_sprites_by_AnnaJ 1_24
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: 1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: Random_pokemon_sprites_by_AnnaJ 1_0
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 366
+        width: 74
+        height: 77
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_1
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 367
+        width: 63
+        height: 63
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_2
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 367
+        width: 63
+        height: 63
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_3
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 367
+        width: 58
+        height: 86
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_4
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 366
+        width: 72
+        height: 76
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_5
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 292
+        width: 39
+        height: 47
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_6
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 290
+        width: 56
+        height: 64
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_7
+      rect:
+        serializedVersion: 2
+        x: 230
+        y: 291
+        width: 48
+        height: 44
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_8
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 223
+        width: 55
+        height: 48
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_9
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 222
+        width: 46
+        height: 50
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_10
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 221
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_11
+      rect:
+        serializedVersion: 2
+        x: 266
+        y: 220
+        width: 48
+        height: 47
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: bulb1
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 170
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: bulb2
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 170
+        width: 33
+        height: 33
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: bulb3
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 170
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: cynd1
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 121
+        width: 40
+        height: 33
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: cynd2
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 119
+        width: 36
+        height: 36
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: cynd3
+      rect:
+        serializedVersion: 2
+        x: 219
+        y: 112
+        width: 48
+        height: 38
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_18
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 66
+        width: 40
+        height: 39
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_19
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 65
+        width: 38
+        height: 40
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_20
+      rect:
+        serializedVersion: 2
+        x: 218
+        y: 65
+        width: 48
+        height: 37
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_21
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 11
+        width: 36
+        height: 41
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_22
+      rect:
+        serializedVersion: 2
+        x: 190
+        y: 11
+        width: 36
+        height: 40
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_23
+      rect:
+        serializedVersion: 2
+        x: 236
+        y: 13
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Random_pokemon_sprites_by_AnnaJ 1_24
+      rect:
+        serializedVersion: 2
+        x: 243
+        y: 13
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
