@@ -19,17 +19,11 @@ public class rocketEmitter : MonoBehaviour
     if (timeToNextEmit < 0) {
       timeToNextEmit = 2;
 
-      Instantiate (projectile, new Vector3 (0, 6, 0), Quaternion.identity);
+      Instantiate (projectile, new Vector3 (gameObject.transform.position.x, 6, 0), Quaternion.identity);
     }
   }
 
   void FixedUpdate ()
   {
   }
-
-  void spawnProjectile ()
-  {
-
-  }
- 
 }

@@ -7,10 +7,10 @@ public class player : MonoBehaviour {
   public float damageTime = 1;
   public Color damageColor = Color.red;
   public int maxHealth = 100;
+  public bool protect;
 
   private Rigidbody2D rigidBody;
   private float damageTimeLeft;
-  private bool spacePressed;
   private Text healthText;
   private int health;
 
@@ -31,29 +31,24 @@ public class player : MonoBehaviour {
       gameObject.GetComponent<Renderer>().material.color = Color.white;
     }
 
-    // input logic
-    if (Input.GetKeyDown ("space")) {
-      spacePressed = true;
-    }
-    if (Input.GetKeyUp ("space")) {
-      spacePressed = false;
-    }
-
     // update health label
     healthText.text = "" + health;
 	}
 
   void FixedUpdate() {
-    if (spacePressed) {
+    if (protect) {
       health = Mathf.Max(health - 1, 0);
     }
   }
 
   void OnTriggerEnter2D (Collider2D collidee) {
-    if (!spacePressed) {
+    if (!protect) {
       playerHit();
     }
-    Rigidbody2D collideeRigidBody = collidee.gameObject.GetComponent<Rigidbody2D> ();
+    GameObject collideeObject = collidee.gameObject;
+    Rigidbody2D collideeRigidBody = collideeObject.GetComponent<Rigidbody2D> ();
+    collideeObject.GetComponent<Collider2D>().enabled = false;
+
     collideeRigidBody.AddForce (Vector2.right * 100 + Vector2.up * 900);
   }
 
