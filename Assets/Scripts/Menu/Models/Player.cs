@@ -1,26 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Net.Sockets;
 
 public class Player
 {
 
-  public int id;
-  public Connection connection;
+  public string name;
+  public TcpClient client;
+  public int lastPinged;
   
-  public Player (int id, Connection connection) {
-    this.id = id;
-    this.connection = connection;
+  public Player (string name, TcpClient client) {
+    this.name = name;
+    this.client = client;
   }
   
   public override bool Equals (System.Object obj) {
     if (obj == null) return false;
     Player p = obj as Player;
     if ((System.Object)p == null) return false;
-    return id == p.id;
+    return name == p.name;
   }
   
   public override int GetHashCode() {
-    return id;
+    return name.GetHashCode();
   }
   
 
