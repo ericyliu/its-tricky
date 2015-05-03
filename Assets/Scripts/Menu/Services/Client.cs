@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using System.Threading;
 
 public class Client : MonoBehaviour {
 
@@ -21,7 +22,7 @@ public class Client : MonoBehaviour {
   }
   
   void Start () {
-    Debug.Log("Client started. Trying to find server");
+    Debug.Log("[CLIENT] Client started. Trying to find server");
     udpClient = new UdpClient(Config.udpPort);
     tcpClient = new TcpClient();
     startListening();
@@ -32,7 +33,7 @@ public class Client : MonoBehaviour {
       float timeSinceInit = Time.timeSinceLevelLoad - initTime;
       if (timeSinceInit > timeToWaitForServer) {
         if (gameObject.GetComponent<Server>() == null) {
-          Debug.Log("No server found, initializing server");
+          Debug.Log("[CLIENT] No server found, initializing server");
           gameObject.AddComponent<Server>();
         }
       }
@@ -49,16 +50,8 @@ public class Client : MonoBehaviour {
     if (message.Split('|')[0] == "discover") {
       if (!connected) {
         connected = true;
-        serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000);
-        tcpClient.Connect(serverEndPoint);
-        
-        NetworkStream clientStream = tcpClient.GetStream();
-        
-        ASCIIEncoding encoder = new ASCIIEncoding();
-        byte[] buffer = encoder.GetBytes("Hello Server!");
-        
-        clientStream.Write(buffer, 0 , buffer.Length);
-        clientStream.Flush();
+        Thread networkThread = new Thread(new ParameterizedThreadStart(startTcpConnection));
+        networkThread.Start();
       }
     }
     startListening();
@@ -67,8 +60,18 @@ public class Client : MonoBehaviour {
     udpClient.Close();
   }
   
-  void sendJoin () {
-    NetworkService.Send("join",NetworkService.GetSelfIP(),serverEndPoint, udpClient);
+  void startTcpConnection (object o) {
+    Debug.Log("[CLIENT] Starting TCP Connection To Server");
+    serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000);
+    tcpClient.Connect(serverEndPoint);
+    
+    NetworkStream clientStream = tcpClient.GetStream();
+    
+    ASCIIEncoding encoder = new ASCIIEncoding();
+    byte[] buffer = encoder.GetBytes("join|" + NetworkService.GetSelfIP());
+    
+    clientStream.Write(buffer, 0 , buffer.Length);
+    clientStream.Flush();
   }
   
 }

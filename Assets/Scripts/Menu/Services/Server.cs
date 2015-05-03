@@ -26,21 +26,23 @@ public class Server : MonoBehaviour {
     udpClient = new UdpClient();
     broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, Config.udpPort);
     InvokeRepeating("sendDiscoveryPing", 0f, discoveryPingTime);
-    startListening();
+    Thread socketThread = new Thread( new ParameterizedThreadStart(startListening));
+    socketThread.Start();
   }
   
   void sendDiscoveryPing () {
     NetworkService.Send("discover",NetworkService.GetSelfIP(),broadcastEndPoint,udpClient);
   }
   
-  void startListening () {
+  void startListening (object o) {
+    Debug.Log("[SERVER] Listening for connections");
     IPEndPoint ip = new IPEndPoint(IPAddress.Any, 3000);
     tcpListener = new TcpListener(ip);
     tcpListener.Start();
     
     while (true) {
       TcpClient client = tcpListener.AcceptTcpClient();
-      Debug.Log("New Client Connected");
+      Debug.Log("[SERVER] New Client Connected");
       Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
       clientThread.Start(client);
     }
@@ -77,10 +79,12 @@ public class Server : MonoBehaviour {
       //message has successfully been received
       ASCIIEncoding encoder = new ASCIIEncoding();
       string data = encoder.GetString(message, 0, bytesRead);
-      Debug.Log(data);
+      Debug.Log("[SERVER] Recieved data: " + data);
       parseMessage(data, tcpClient);
     }
     
+    Debug.Log("[SERVER] Client has disconnected");
+    LobbyController.current.RemovePlayer(tcpClient);
     tcpClient.Close();
   }
   
