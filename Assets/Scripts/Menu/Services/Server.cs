@@ -55,25 +55,37 @@ public class Server : MonoBehaviour {
     byte[] message = new byte[4096];
     int bytesRead;
     
-    while (true)
+    while (tcpClient.Connected)
     {
+      Debug.Log(tcpClient.Connected);
       bytesRead = 0;
       
       try
       {
+        Debug.Log("Reading...");
         //blocks until a client sends a message
-        bytesRead = clientStream.Read(message, 0, 4096);
+        var asyncReader = clientStream.BeginRead(message, 0, 4096, null, null);
+        WaitHandle handle = asyncReader.AsyncWaitHandle;
+        
+        // Give the reader 2seconds to respond with a value
+        bool completed = handle.WaitOne(2000, false);
+        if (completed)
+        {
+          bytesRead = clientStream.EndRead(asyncReader);
+          Debug.Log("Read");
+        }
       }
       catch
       {
         //a socket error has occured
+        Debug.Log("Socket Exception");
         break;
       }
       
       if (bytesRead == 0)
       {
         //the client has disconnected from the server
-        break;
+        continue;
       }
       
       //message has successfully been received
