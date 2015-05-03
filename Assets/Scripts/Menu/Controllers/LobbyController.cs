@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using UnityEngine.UI;
 
 public class LobbyController : MonoBehaviour {
 
@@ -61,6 +62,7 @@ public class LobbyController : MonoBehaviour {
     playerObject.transform.SetParent(lobbyPanel.transform, false);
     RectTransform rect = playerObject.GetComponent<RectTransform>();
     rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -10 - (60*index));
+    playerObject.transform.GetComponentInChildren<Text>().text = "Player " + player.name;
   }
   
 }

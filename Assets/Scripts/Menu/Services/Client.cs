@@ -50,6 +50,7 @@ public class Client : MonoBehaviour {
     if (message.Split('|')[0] == "discover") {
       if (!connected) {
         connected = true;
+        serverEndPoint = new IPEndPoint(ip.Address, 3000);
         Thread networkThread = new Thread(new ParameterizedThreadStart(startTcpConnection));
         networkThread.Start();
       }
@@ -62,9 +63,7 @@ public class Client : MonoBehaviour {
   
   void startTcpConnection (object o) {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
-    serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000);
     tcpClient.Connect(serverEndPoint);
-    
     NetworkStream clientStream = tcpClient.GetStream();
     
     ASCIIEncoding encoder = new ASCIIEncoding();
