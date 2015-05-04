@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour
   private GameObject[] players;
   private int playerNumber = 0;
 
+  private string previousState;
+
   // Use this for initialization
   void Start ()
   {
@@ -36,11 +38,12 @@ public class PlayerController : MonoBehaviour
       spacePressed = false;
     }
 
-    sendControlUpdate (spacePressed);
-    // this is to make sure its still working locally. get rid of this once
-    // networking is actually working
-    DodgerMessage msg = createDogderControlMessage (spacePressed);
-    receiveControlMessage (msg);
+    string serializedMsg = createDogderControlMessage (spacePressed).serialize();
+    if (serializedMsg != previousState) {
+      // this is to make sure its still working locally. get rid of this once
+      // networking is actually working
+      receiveControlMessage (serializedMsg);
+    }
   }
 
   GameObject createPlayer ()
@@ -62,60 +65,62 @@ public class PlayerController : MonoBehaviour
     int numPlayers = players.Length;
     for (int i = 0; i < numPlayers; i++) {
       GameObject player = players [i];
-      player.transform.position = new Vector2 (getPlayerXPosition(i, numPlayers), playerObjectCenterOffsetY);
+      player.transform.position = new Vector2 (getPlayerXPosition (i, numPlayers), playerObjectCenterOffsetY);
     }
   }
 
-  float getPlayerXPosition(int playerNumber, int totalPlayers) {
+  float getPlayerXPosition (int playerNumber, int totalPlayers)
+  {
     float screenWidth = 10;
     float position = screenWidth * (1.0f * playerNumber + 1) / (1.0f * totalPlayers + 1);
     return position - screenWidth / 2.0f;
   }
 
-  player getPlayer(int n) {
+  player getPlayer (int n)
+  {
     GameObject player = players [n];
     return player.GetComponentInChildren<player> ();
   }
 
-  void sendControlUpdate(bool dodging) {
-    DodgerMessage msg = createDogderControlMessage (dodging);
-
-    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(msg.GetType());
-    // do the actual sending here.
-  }
-
-  DodgerMessage createDogderControlMessage(bool dodging) {
+  DodgerUpdateMessage createDogderControlMessage (bool dodging)
+  {
     DodgerUpdateMessage msgData = new DodgerUpdateMessage ();
     msgData.dodging = dodging;
     msgData.playerNumber = playerNumber;
     msgData.health = getPlayer (playerNumber).health;
-    DodgerMessage msg = new DodgerMessage ();
-    msg.data = msgData;
-    msg.type = "control";
-    return msg;
+    msgData.serialize ();
+    return msgData;
   }
 
-  void receiveControlMessage(DodgerMessage msg) {
-    if (msg.type == "control") {
-      DodgerUpdateMessage controlMsg = (DodgerUpdateMessage) msg.data;
-      if (controlMsg.playerNumber == playerNumber) {
-        Debug.LogError("got a control message for self. somethings wrong");
-      }
-
-      player playerScript = getPlayer(controlMsg.playerNumber);
-      playerScript.protect = spacePressed;
-      playerScript.health = controlMsg.health;
+  void receiveControlMessage (string data)
+  {
+    DodgerUpdateMessage msg = DodgerUpdateMessage.deserialize (data);
+    if (msg.playerNumber == playerNumber) {
+      Debug.LogError ("got a control message for self. somethings wrong");
     }
+
+    player playerScript = getPlayer (msg.playerNumber);
+    playerScript.protect = spacePressed;
+    playerScript.health = msg.health;
   }
 }
 
-public class DodgerMessage {
-  public string type;
-  public object data;
-}
-
-public class DodgerUpdateMessage {
+public class DodgerUpdateMessage
+{
   public bool dodging;
   public int health;
   public int playerNumber;
+
+  public string serialize() {
+    return dodging + "|" + health + "|" + playerNumber;
+  }
+
+  public static DodgerUpdateMessage deserialize(string msg) {
+    string[] splitMsg = msg.Split ('|');
+    DodgerUpdateMessage obj = new DodgerUpdateMessage ();
+    obj.dodging = "true" == splitMsg [0];
+    obj.health = int.Parse(splitMsg [1]);
+    obj.playerNumber = int.Parse(splitMsg [2]);
+    return obj;
+  }
 }
