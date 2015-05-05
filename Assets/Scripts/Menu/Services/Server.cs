@@ -90,7 +90,15 @@ public class Server : MonoBehaviour {
       Debug.Log("[SERVER] client " + joinMsg.ipAddress + " joined");
       
       // update everyone on who is online
-      broadcastMessage(message);
+      string[] ips = new string[playerIps.Count];
+      Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
+      int i = 0;
+      while (enumerator.MoveNext()) {
+        ips[i] = enumerator.Current.Key;
+        i++;
+      }
+      JoinBroadcastMessage jbm = new JoinBroadcastMessage(ips);
+      broadcastMessage(jbm.encodeMessage());
     }
   }
   

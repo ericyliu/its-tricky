@@ -40,9 +40,16 @@ public class LobbyController : MonoBehaviour {
     }
   }
   
-  public void UpdatePlayer (string name) {
-    Player player = new Player(name);
-    if (!lobby.onlinePlayers.Contains(player)) {
+  public void UpdatePlayers (string[] playerIps) {
+    List<Player>.Enumerator enumerator = this.lobby.onlinePlayers.GetEnumerator();
+    while (enumerator.MoveNext()) {
+      Player player = enumerator.Current;
+      lobby.onlinePlayers.Remove(player);
+    }
+    
+    for (int i = 0; i < playerIps.Length; i++) {
+      Debug.Log("adding player " + i + " " +playerIps[i]);
+      Player player = new Player(playerIps[i]);
       lobby.onlinePlayers.Add(player);
     }
   }

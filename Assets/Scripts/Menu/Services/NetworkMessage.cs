@@ -1,7 +1,8 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using System.Collections;
 using System;
 
-public abstract class NetworkMessage {
+public abstract class NetworkMessage  {
   public const char TYPE_DELIMITER = '@';
   public const char DATA_DELIMITER = '|';
   
@@ -23,9 +24,12 @@ public abstract class NetworkMessage {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
     string type = splitMsg [0];
     if (type == JoinMessage.type) {
-      return JoinMessage.decodeMessageData(msg);
+      return JoinMessage.decodeMessageData(splitMsg[1]);
+    }  else if (type == JoinBroadcastMessage.type) {
+      return JoinBroadcastMessage.decodeMessageData(splitMsg[1]);
     } else {
-      throw new Exception ("There is no message of type " + type);
+      Debug.LogError("Need to add code to decode new message type for message: " + msg);
+      return null;
     }
   }
   
@@ -49,5 +53,28 @@ public class JoinMessage : NetworkMessage {
 
   public static NetworkMessage decodeMessageData(string msgData) {
     return new JoinMessage (msgData);
+  }
+}
+
+public class JoinBroadcastMessage : NetworkMessage {
+  public static string type = "join_broadcast";
+  public string[] ipAddresses;
+  
+  public JoinBroadcastMessage (string[] ipAddresses) {
+    this.ipAddresses = ipAddresses;
+  }
+  
+  public override string encodeMessageData() {
+    return String.Join(NetworkMessage.DATA_DELIMITER.ToString(), ipAddresses);
+  }
+  
+  public override string thisMessageType() {
+    return JoinBroadcastMessage.type;
+  }
+  
+  public static NetworkMessage decodeMessageData(string msgData) {
+    string[] ips = msgData.Split(NetworkMessage.DATA_DELIMITER);
+    Debug.Log("------ " + ips);
+    return new JoinBroadcastMessage (msgData.Split(NetworkMessage.DATA_DELIMITER));
   }
 }

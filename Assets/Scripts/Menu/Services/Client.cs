@@ -12,24 +12,23 @@ public class Client : MonoBehaviour {
   bool connected = false;
   float timeToWaitForServer = 5f;
   string ipAddress;
-  
+  string[] connectedPlayerIps;
   IPEndPoint serverEndPoint;
-
   float initTime;
 
-  void Awake () {
+  void Awake() {
     GameObject.DontDestroyOnLoad(gameObject);
     initTime = Time.timeSinceLevelLoad;
   }
   
-  void Start () {
+  void Start() {
     Debug.Log("[CLIENT] Client started. Trying to find server");
-    udpClient = new UdpClient(Config.udpPort);
-    tcpClient = new TcpClient();
+    udpClient = new UdpClient (Config.udpPort);
+    tcpClient = new TcpClient ();
     startListening();
   }
   
-  public void Update () {
+  public void Update() {
     if (!connected) {
       float timeSinceInit = Time.timeSinceLevelLoad - initTime;
       if (timeSinceInit > timeToWaitForServer) {
@@ -41,33 +40,34 @@ public class Client : MonoBehaviour {
     }
   }
   
-  void startListening () {
-    udpClient.BeginReceive(receive, new object());
+  void startListening() {
+    udpClient.BeginReceive(receive, new object ());
   }
   
   void receive(IAsyncResult ar) {
-    IPEndPoint ip = new IPEndPoint(IPAddress.Any, 15000);
+    IPEndPoint ip = new IPEndPoint (IPAddress.Any, 15000);
     byte[] bytes = udpClient.EndReceive(ar, ref ip);
     string message = Encoding.ASCII.GetString(bytes);
-    if (message.Split('|')[0] == "discover") {
+    if (message.Split('|') [0] == "discover") {
       if (!connected) {
         connected = true;
-        serverEndPoint = new IPEndPoint(ip.Address, 3000);
-        Thread networkThread = new Thread(new ParameterizedThreadStart(startTcpConnection));
+        serverEndPoint = new IPEndPoint (ip.Address, 3000);
+        Thread networkThread = new Thread (new ParameterizedThreadStart (startTcpConnection));
         networkThread.Start();
       }
     }
     startListening();
   }
-  void stopListening () {
+
+  void stopListening() {
     udpClient.Close();
   }
   
-  void startTcpConnection (object o) {
+  void startTcpConnection(object o) {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
     ipAddress = NetworkService.GetSelfIP();
-    JoinMessage joinMsg = new JoinMessage(ipAddress);
+    JoinMessage joinMsg = new JoinMessage (ipAddress);
     NetworkService.sendTCPMessage(joinMsg.encodeMessage(), tcpClient.GetStream());
     Thread clientThread = new Thread (new ParameterizedThreadStart (listen));
     clientThread.Start(tcpClient);
@@ -78,19 +78,21 @@ public class Client : MonoBehaviour {
     
     while (tcpClient.Connected) {
       string message = NetworkService.readTCPMessage(tcpClient.GetStream());
-      Debug.Log("[CLIENT " + ipAddress + "] Recieved data: " + message);
+      Debug.Log("[CLIENT " + this.ipAddress + "] Recieved data: " + message);
       parseMessage(message);
     }
     
-    Debug.Log("[CLIENT + " + ipAddress + "] disconnected");
+    Debug.Log("[CLIENT + " + this.ipAddress + "] disconnected");
     tcpClient.Close();
   }
   
   void parseMessage(string message) {
     string messageType = NetworkMessage.messageType(message);
-    if (messageType == JoinMessage.type) {
-      JoinMessage joinMsg = (JoinMessage) NetworkMessage.decodeMessage(message);
-      LobbyController.current.UpdatePlayer(ipAddress);
+    if (messageType == JoinBroadcastMessage.type) {
+      JoinBroadcastMessage jbm = (JoinBroadcastMessage)NetworkMessage.decodeMessage(message);
+      this.connectedPlayerIps = jbm.ipAddresses;
+      LobbyController.current.UpdatePlayers(this.connectedPlayerIps);
     }
+    throw new Exception("[CLIENT + " + this.ipAddress + "] Could not parse messaage " + message);
   }
 }
