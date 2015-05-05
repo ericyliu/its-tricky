@@ -10,7 +10,7 @@ using System.Xml;
 using System.IO;
 using System.Threading;
 
-public class Server : MonoBehaviour {
+public class Server : Networker {
 
   public float discoveryPingTime = 1f;
   public float clientPingTime = 3f;
@@ -38,6 +38,13 @@ public class Server : MonoBehaviour {
     playerIps = new Dictionary<string, TcpClient> ();
   }
   
+  public void Update() {
+    NetworkerKV data = safeGetNextMessage();
+    if (data != null) {
+      parseMessage(data.Key, data.Value);
+    }
+  }
+
   void sendDiscoveryPing() {
     NetworkService.Send("discover", NetworkService.GetSelfIP(), broadcastEndPoint, udpClient);
   }
@@ -55,22 +62,8 @@ public class Server : MonoBehaviour {
     while (true) {
       TcpClient client = tcpListener.AcceptTcpClient();
       Debug.Log("[SERVER] New Client Connected");
-      Thread clientThread = new Thread (new ParameterizedThreadStart (HandleClientComm));
-      clientThread.Start(client);
+      startNetworkListening(client);
     }
-  }
-  
-  void HandleClientComm(object client) {
-    TcpClient tcpClient = (TcpClient)client;
-    
-    while (tcpClient.Connected) {
-      string message = NetworkService.readTCPMessage(tcpClient.GetStream());
-      Debug.Log("[SERVER] Recieved data: " + message);
-      parseMessage(message, tcpClient);
-    }
-    
-    Debug.Log("[SERVER] A client has disconnected");
-    tcpClient.Close();
   }
   
   void broadcastMessage(NetworkMessage message) {
@@ -130,7 +123,7 @@ public class Server : MonoBehaviour {
     client.Close();
     playerIps.Remove(ipAddress);
     
-    broadcastMessage(new PlayerUpdateMessage(ipAddress, "leave"));
+    broadcastMessage(new PlayerUpdateMessage (ipAddress, "leave"));
     string[] ips = new string[playerIps.Count];
     Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
     int i = 0;

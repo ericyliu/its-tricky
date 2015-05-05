@@ -2,10 +2,10 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
-using System.Threading;
 
-public class Client : MonoBehaviour {
+public class Client : Networker {
 
   UdpClient udpClient;
   TcpClient tcpClient;
@@ -38,6 +38,11 @@ public class Client : MonoBehaviour {
         }
       }
     }
+    
+    NetworkerKV data = safeGetNextMessage();
+    if (data != null) {
+      parseMessage(data.Key);
+    }
   }
   
   void startListening() {
@@ -52,8 +57,7 @@ public class Client : MonoBehaviour {
       if (!connected) {
         connected = true;
         serverEndPoint = new IPEndPoint (ip.Address, 3000);
-        Thread networkThread = new Thread (new ParameterizedThreadStart (startTcpConnection));
-        networkThread.Start();
+        startTcpConnection();
       }
     }
     startListening();
@@ -63,27 +67,13 @@ public class Client : MonoBehaviour {
     udpClient.Close();
   }
   
-  void startTcpConnection(object o) {
+  void startTcpConnection() {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
     ipAddress = NetworkService.GetSelfIP();
     PlayerUpdateMessage joinMsg = new PlayerUpdateMessage (ipAddress, "join");
     NetworkService.sendTCPMessage(joinMsg, tcpClient.GetStream());
-    Thread clientThread = new Thread (new ParameterizedThreadStart (listen));
-    clientThread.Start(tcpClient);
-  }
-  
-  void listen(object client) {
-    TcpClient tcpClient = (TcpClient)client;
-    
-    while (tcpClient.Connected) {
-      string message = NetworkService.readTCPMessage(tcpClient.GetStream());
-      Debug.Log("[CLIENT " + this.ipAddress + "] Recieved data: " + message);
-      parseMessage(message);
-    }
-    
-    Debug.Log("[CLIENT + " + this.ipAddress + "] disconnected");
-    tcpClient.Close();
+    startNetworkListening(tcpClient);
   }
   
   void parseMessage(string message) {
