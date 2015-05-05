@@ -68,7 +68,7 @@ public class Client : MonoBehaviour {
     tcpClient.Connect(serverEndPoint);
     ipAddress = NetworkService.GetSelfIP();
     JoinMessage joinMsg = new JoinMessage (ipAddress);
-    NetworkService.sendTCPMessage(joinMsg.encodeMessage(), tcpClient.GetStream());
+    NetworkService.sendTCPMessage(joinMsg, tcpClient.GetStream());
     Thread clientThread = new Thread (new ParameterizedThreadStart (listen));
     clientThread.Start(tcpClient);
   }
@@ -92,7 +92,10 @@ public class Client : MonoBehaviour {
       JoinBroadcastMessage jbm = (JoinBroadcastMessage)NetworkMessage.decodeMessage(message);
       this.connectedPlayerIps = jbm.ipAddresses;
       LobbyController.current.UpdatePlayers(this.connectedPlayerIps);
+    } else if (messageType == PingMessage.type) {
+      Debug.Log("[CLIENT + " + this.ipAddress + "] ping!");
+    } else {
+      Debug.LogError("[CLIENT + " + this.ipAddress + "] could not parseMessage: " + message);
     }
-    throw new Exception("[CLIENT + " + this.ipAddress + "] Could not parse messaage " + message);
   }
 }

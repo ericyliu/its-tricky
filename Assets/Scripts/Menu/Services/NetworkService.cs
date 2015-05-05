@@ -25,11 +25,11 @@ public class NetworkService {
     udpClient.Send(bytes, bytes.Length, endpoint);
   }
   
-  public static void sendTCPMessage(string message, NetworkStream clientStream) {
+  public static void sendTCPMessage(NetworkMessage message, NetworkStream clientStream) {
     BinaryWriter writer = null;
     try {
       writer = new BinaryWriter(clientStream);
-      writer.Write(message);
+      writer.Write(message.encodeMessage());
     } catch (Exception e) {
       Debug.Log(e);
       throw;

@@ -2,11 +2,12 @@
 using System.Collections;
 using System;
 
-public abstract class NetworkMessage  {
+public abstract class NetworkMessage {
   public const char TYPE_DELIMITER = '@';
   public const char DATA_DELIMITER = '|';
   
   public abstract string encodeMessageData();
+
   public abstract string thisMessageType();
   // also needs to implement   public static NetworkMessage decodeMessageData(string msgData) {
   // but i cant fucking enforce static methods
@@ -24,9 +25,11 @@ public abstract class NetworkMessage  {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
     string type = splitMsg [0];
     if (type == JoinMessage.type) {
-      return JoinMessage.decodeMessageData(splitMsg[1]);
-    }  else if (type == JoinBroadcastMessage.type) {
-      return JoinBroadcastMessage.decodeMessageData(splitMsg[1]);
+      return JoinMessage.decodeMessageData(splitMsg [1]);
+    } else if (type == JoinBroadcastMessage.type) {
+      return JoinBroadcastMessage.decodeMessageData(splitMsg [1]);
+    } else if (type == PingMessage.type) {
+      return PingMessage.decodeMessageData(splitMsg [1]);
     } else {
       Debug.LogError("Need to add code to decode new message type for message: " + msg);
       return null;
@@ -73,8 +76,25 @@ public class JoinBroadcastMessage : NetworkMessage {
   }
   
   public static NetworkMessage decodeMessageData(string msgData) {
-    string[] ips = msgData.Split(NetworkMessage.DATA_DELIMITER);
-    Debug.Log("------ " + ips);
     return new JoinBroadcastMessage (msgData.Split(NetworkMessage.DATA_DELIMITER));
+  }
+}
+
+public class PingMessage : NetworkMessage {
+  public static string type = "ping";
+  
+  public PingMessage () {
+  }
+  
+  public override string encodeMessageData() {
+    return "";
+  }
+  
+  public override string thisMessageType() {
+    return PingMessage.type;
+  }
+  
+  public static NetworkMessage decodeMessageData(string msgData) {
+    return new PingMessage();
   }
 }

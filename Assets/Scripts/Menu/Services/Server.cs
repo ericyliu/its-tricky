@@ -30,6 +30,8 @@ public class Server : MonoBehaviour {
     udpClient = new UdpClient ();
     broadcastEndPoint = new IPEndPoint (IPAddress.Broadcast, Config.udpPort);
     InvokeRepeating("sendDiscoveryPing", 0f, discoveryPingTime);
+    InvokeRepeating("pingEveryone", 0f, discoveryPingTime);
+    
     Thread socketThread = new Thread (new ParameterizedThreadStart (startListening));
     socketThread.Start();
     
@@ -38,6 +40,10 @@ public class Server : MonoBehaviour {
   
   void sendDiscoveryPing() {
     NetworkService.Send("discover", NetworkService.GetSelfIP(), broadcastEndPoint, udpClient);
+  }
+  
+  void pingEveryone() {
+    broadcastMessage(new PingMessage ());
   }
   
   void startListening(object o) {
@@ -69,7 +75,7 @@ public class Server : MonoBehaviour {
     tcpClient.Close();
   }
   
-  void broadcastMessage(string message) {
+  void broadcastMessage(NetworkMessage message) {
     Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
     while (enumerator.MoveNext()) {
       string ipAddress = enumerator.Current.Key;
@@ -77,7 +83,7 @@ public class Server : MonoBehaviour {
     }
   }
   
-  void sendMessageTo(string ipAddress, string message) {
+  void sendMessageTo(string ipAddress, NetworkMessage message) {
     TcpClient client = playerIps [ipAddress];
     NetworkService.sendTCPMessage(message, client.GetStream());
   }
@@ -85,7 +91,7 @@ public class Server : MonoBehaviour {
   void parseMessage(string message, TcpClient client) {
     string messageType = NetworkMessage.messageType(message);
     if (messageType == JoinMessage.type) {
-      JoinMessage joinMsg = (JoinMessage) NetworkMessage.decodeMessage(message);
+      JoinMessage joinMsg = (JoinMessage)NetworkMessage.decodeMessage(message);
       playerIps.Add(joinMsg.ipAddress, client);
       Debug.Log("[SERVER] client " + joinMsg.ipAddress + " joined");
       
@@ -94,11 +100,15 @@ public class Server : MonoBehaviour {
       Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
       int i = 0;
       while (enumerator.MoveNext()) {
-        ips[i] = enumerator.Current.Key;
+        ips [i] = enumerator.Current.Key;
         i++;
       }
-      JoinBroadcastMessage jbm = new JoinBroadcastMessage(ips);
-      broadcastMessage(jbm.encodeMessage());
+      JoinBroadcastMessage jbm = new JoinBroadcastMessage (ips);
+      broadcastMessage(jbm);
+    } else if (messageType == PingMessage.type) {
+      Debug.Log("[SERVER] ping!");
+    } else {
+      Debug.LogError("[SERVER] could not parse message of type: " + messageType);
     }
   }
   
