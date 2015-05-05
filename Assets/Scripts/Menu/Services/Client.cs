@@ -67,7 +67,7 @@ public class Client : MonoBehaviour {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
     ipAddress = NetworkService.GetSelfIP();
-    JoinMessage joinMsg = new JoinMessage (ipAddress);
+    PlayerUpdateMessage joinMsg = new PlayerUpdateMessage (ipAddress, "join");
     NetworkService.sendTCPMessage(joinMsg, tcpClient.GetStream());
     Thread clientThread = new Thread (new ParameterizedThreadStart (listen));
     clientThread.Start(tcpClient);

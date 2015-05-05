@@ -70,30 +70,33 @@ public class Server : MonoBehaviour {
     }
     
     Debug.Log("[SERVER] A client has disconnected");
-    //todo: add a player left message instead of this
-    //LobbyController.current.RemovePlayer(tcpClient);
     tcpClient.Close();
   }
   
   void broadcastMessage(NetworkMessage message) {
-    Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
-    while (enumerator.MoveNext()) {
-      string ipAddress = enumerator.Current.Key;
-      sendMessageTo(ipAddress, message);
+    foreach (KeyValuePair<string, TcpClient> kv in this.playerIps) {
+      sendMessageTo(kv.Key, message);
     }
   }
   
   void sendMessageTo(string ipAddress, NetworkMessage message) {
     TcpClient client = playerIps [ipAddress];
-    NetworkService.sendTCPMessage(message, client.GetStream());
+    try {
+      NetworkService.sendTCPMessage(message, client.GetStream());
+    } catch (SocketException e) {
+      closeConnection(ipAddress);      
+    }
   }
   
   void parseMessage(string message, TcpClient client) {
     string messageType = NetworkMessage.messageType(message);
-    if (messageType == JoinMessage.type) {
-      JoinMessage joinMsg = (JoinMessage)NetworkMessage.decodeMessage(message);
-      playerIps.Add(joinMsg.ipAddress, client);
-      Debug.Log("[SERVER] client " + joinMsg.ipAddress + " joined");
+    if (messageType == PlayerUpdateMessage.type) {
+      PlayerUpdateMessage joinMsg = (PlayerUpdateMessage)NetworkMessage.decodeMessage(message);
+      if (joinMsg.action == "join") {
+        playerIps.Add(joinMsg.ipAddress, client);
+      }
+      
+      Debug.Log("[SERVER] client " + joinMsg.ipAddress + " " + joinMsg.action + "-ed ");
       
       // update everyone on who is online
       string[] ips = new string[playerIps.Count];
@@ -103,8 +106,7 @@ public class Server : MonoBehaviour {
         ips [i] = enumerator.Current.Key;
         i++;
       }
-      JoinBroadcastMessage jbm = new JoinBroadcastMessage (ips);
-      broadcastMessage(jbm);
+      broadcastMessage(new JoinBroadcastMessage (ips));
     } else if (messageType == PingMessage.type) {
       Debug.Log("[SERVER] ping!");
     } else {
@@ -120,6 +122,22 @@ public class Server : MonoBehaviour {
       }
     }
     throw new Exception ("Could not find ip address of client " + client);
+  }
+  
+  void closeConnection(string ipAddress) {
+    Debug.LogError("[SERVER] closing socket to ip address " + ipAddress);
+    TcpClient client = playerIps [ipAddress];
+    client.Close();
+    playerIps.Remove(ipAddress);
+    
+    broadcastMessage(new PlayerUpdateMessage(ipAddress, "leave"));
+    string[] ips = new string[playerIps.Count];
+    Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
+    int i = 0;
+    while (enumerator.MoveNext()) {
+      ips [i] = enumerator.Current.Key;
+      i++;
+    }
   }
   
   /*

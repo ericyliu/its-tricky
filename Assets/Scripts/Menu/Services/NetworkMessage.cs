@@ -24,8 +24,8 @@ public abstract class NetworkMessage {
   public static NetworkMessage decodeMessage(string msg) {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
     string type = splitMsg [0];
-    if (type == JoinMessage.type) {
-      return JoinMessage.decodeMessageData(splitMsg [1]);
+    if (type == PlayerUpdateMessage.type) {
+      return PlayerUpdateMessage.decodeMessageData(splitMsg [1]);
     } else if (type == JoinBroadcastMessage.type) {
       return JoinBroadcastMessage.decodeMessageData(splitMsg [1]);
     } else if (type == PingMessage.type) {
@@ -38,24 +38,27 @@ public abstract class NetworkMessage {
   
 }
 
-public class JoinMessage : NetworkMessage {
-  public static string type = "join";
+public class PlayerUpdateMessage : NetworkMessage {
+  public static string type = "player_update";
   public string ipAddress;
+  public string action;
 
-  public JoinMessage (string ipAddress) {
+  public PlayerUpdateMessage (string ipAddress, string action) {
     this.ipAddress = ipAddress;
+    this.action = action;
   }
 
   public override string encodeMessageData() {
-    return this.ipAddress;
+    return this.ipAddress + NetworkMessage.DATA_DELIMITER.ToString() + this.action;
   }
 
   public override string thisMessageType() {
-    return JoinMessage.type;
+    return PlayerUpdateMessage.type;
   }
 
   public static NetworkMessage decodeMessageData(string msgData) {
-    return new JoinMessage (msgData);
+    string[] splitString = msgData.Split(NetworkMessage.DATA_DELIMITER);
+    return new PlayerUpdateMessage (splitString[0], splitString[1]);
   }
 }
 
