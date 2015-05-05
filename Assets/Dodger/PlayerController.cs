@@ -7,20 +7,17 @@ using System.Collections;
  * data: whatever
  */
 
-public class PlayerController : MonoBehaviour
-{
+public class PlayerController : MonoBehaviour {
   public Transform Player;
   public float playerObjectCenterOffsetX = 0;
   public float playerObjectCenterOffsetY = 0;
   private bool spacePressed;
   private GameObject[] players;
   private int playerNumber = 0;
-
   private string previousState;
 
   // Use this for initialization
-  void Start ()
-  {
+  void Start () {
     createPlayers (3);
     layoutPlayers ();
     player player = getPlayer (playerNumber);
@@ -28,8 +25,7 @@ public class PlayerController : MonoBehaviour
   }
   
   // Update is called once per frame
-  void Update ()
-  {
+  void Update () {
     // input logic
     if (Input.GetKeyDown ("space")) {
       spacePressed = true;
@@ -38,30 +34,28 @@ public class PlayerController : MonoBehaviour
       spacePressed = false;
     }
 
-    string serializedMsg = createDogderControlMessage (spacePressed).serialize();
+    string serializedMsg = createDogderControlMessage (spacePressed).serialize ();
     if (serializedMsg != previousState) {
+      previousState = serializedMsg;
       // this is to make sure its still working locally. get rid of this once
       // networking is actually working
       receiveControlMessage (serializedMsg);
     }
   }
 
-  GameObject createPlayer ()
-  {
+  GameObject createPlayer () {
     Transform transform = GameObject.Instantiate (Player, Vector2.zero, Quaternion.identity) as Transform;
     return transform.gameObject;
   }
 
-  void createPlayers (int n)
-  {
+  void createPlayers (int n) {
     players = new GameObject[n];
     for (int i = 0; i < n; i++) {
       players [i] = createPlayer ();
     }
   }
 
-  void layoutPlayers ()
-  {
+  void layoutPlayers () {
     int numPlayers = players.Length;
     for (int i = 0; i < numPlayers; i++) {
       GameObject player = players [i];
@@ -69,21 +63,18 @@ public class PlayerController : MonoBehaviour
     }
   }
 
-  float getPlayerXPosition (int playerNumber, int totalPlayers)
-  {
+  float getPlayerXPosition (int playerNumber, int totalPlayers) {
     float screenWidth = 10;
     float position = screenWidth * (1.0f * playerNumber + 1) / (1.0f * totalPlayers + 1);
     return position - screenWidth / 2.0f;
   }
 
-  player getPlayer (int n)
-  {
+  player getPlayer (int n) {
     GameObject player = players [n];
     return player.GetComponentInChildren<player> ();
   }
 
-  DodgerUpdateMessage createDogderControlMessage (bool dodging)
-  {
+  DodgerUpdateMessage createDogderControlMessage (bool dodging) {
     DodgerUpdateMessage msgData = new DodgerUpdateMessage ();
     msgData.dodging = dodging;
     msgData.playerNumber = playerNumber;
@@ -92,8 +83,7 @@ public class PlayerController : MonoBehaviour
     return msgData;
   }
 
-  void receiveControlMessage (string data)
-  {
+  void receiveControlMessage (string data) {
     DodgerUpdateMessage msg = DodgerUpdateMessage.deserialize (data);
     if (msg.playerNumber == playerNumber) {
       Debug.LogError ("got a control message for self. somethings wrong");
@@ -105,22 +95,21 @@ public class PlayerController : MonoBehaviour
   }
 }
 
-public class DodgerUpdateMessage
-{
+public class DodgerUpdateMessage {
   public bool dodging;
   public int health;
   public int playerNumber;
 
-  public string serialize() {
+  public string serialize () {
     return dodging + "|" + health + "|" + playerNumber;
   }
 
-  public static DodgerUpdateMessage deserialize(string msg) {
+  public static DodgerUpdateMessage deserialize (string msg) {
     string[] splitMsg = msg.Split ('|');
     DodgerUpdateMessage obj = new DodgerUpdateMessage ();
     obj.dodging = "true" == splitMsg [0];
-    obj.health = int.Parse(splitMsg [1]);
-    obj.playerNumber = int.Parse(splitMsg [2]);
+    obj.health = int.Parse (splitMsg [1]);
+    obj.playerNumber = int.Parse (splitMsg [2]);
     return obj;
   }
 }

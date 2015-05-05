@@ -25,5 +25,14 @@ public class NetworkService {
     byte[] bytes = Formatter.Format(route, message);
     udpClient.Send(bytes, bytes.Length, endpoint);
   }
-
+  
+  public static void sendTCPMessage(string message, TcpClient client) {
+    NetworkStream clientStream = client.GetStream();
+    
+    ASCIIEncoding encoder = new ASCIIEncoding();
+    byte[] buffer = encoder.GetBytes(message);
+    
+    clientStream.Write(buffer, 0 , buffer.Length);
+    clientStream.Flush();
+  }
 }

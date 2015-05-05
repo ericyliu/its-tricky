@@ -43,6 +43,7 @@ public class Client : MonoBehaviour {
   void startListening () {
     udpClient.BeginReceive(receive, new object());
   }
+  
   void receive(IAsyncResult ar) {
     IPEndPoint ip = new IPEndPoint(IPAddress.Any, 15000);
     byte[] bytes = udpClient.EndReceive(ar, ref ip);
@@ -64,13 +65,8 @@ public class Client : MonoBehaviour {
   void startTcpConnection (object o) {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
-    NetworkStream clientStream = tcpClient.GetStream();
     
-    ASCIIEncoding encoder = new ASCIIEncoding();
-    byte[] buffer = encoder.GetBytes("join|" + NetworkService.GetSelfIP());
-    
-    clientStream.Write(buffer, 0 , buffer.Length);
-    clientStream.Flush();
+    NetworkService.sendTCPMessage("join|" + NetworkService.GetSelfIP(), tcpClient);
   }
   
 }
