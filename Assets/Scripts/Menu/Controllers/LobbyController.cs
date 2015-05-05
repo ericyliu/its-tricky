@@ -40,15 +40,15 @@ public class LobbyController : MonoBehaviour {
     }
   }
   
-  public void UpdatePlayer (string name, TcpClient client) {
-    Player player = new Player(name, client);
+  public void UpdatePlayer (string name) {
+    Player player = new Player(name);
     if (!lobby.onlinePlayers.Contains(player)) {
       lobby.onlinePlayers.Add(player);
     }
   }
 
-  public void RemovePlayer (TcpClient client) {
-    Player player = lobby.onlinePlayers.Find(x => x.client == client);
+  public void RemovePlayer (string name) {
+    Player player = lobby.onlinePlayers.Find(x => x.name == name);
     lobby.onlinePlayers.Remove(player);
   }
 

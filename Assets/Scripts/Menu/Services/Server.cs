@@ -56,45 +56,16 @@ public class Server : MonoBehaviour {
   
   void HandleClientComm(object client) {
     TcpClient tcpClient = (TcpClient)client;
-    NetworkStream clientStream = tcpClient.GetStream();
-    
-    byte[] message = new byte[4096];
-    int bytesRead;
     
     while (tcpClient.Connected) {
-      bytesRead = 0;
-      try {
-        Debug.Log("Reading...");
-        //blocks until a client sends a message
-        var asyncReader = clientStream.BeginRead(message, 0, 4096, null, null);
-        WaitHandle handle = asyncReader.AsyncWaitHandle;
-        
-        // Give the reader 2seconds to respond with a value
-        bool completed = handle.WaitOne(2000, false);
-        if (completed) {
-          bytesRead = clientStream.EndRead(asyncReader);
-          Debug.Log("Read");
-        }
-      } catch {
-        //a socket error has occured
-        Debug.Log("Socket Exception");
-        break;
-      }
-      
-      if (bytesRead == 0) {
-        //the client has disconnected from the server
-        continue;
-      }
-      
-      //message has successfully been received
-      ASCIIEncoding encoder = new ASCIIEncoding ();
-      string data = encoder.GetString(message, 0, bytesRead);
-      Debug.Log("[SERVER] Recieved data: " + data);
-      parseMessage(data, tcpClient);
+      string message = NetworkService.readTCPMessage(tcpClient.GetStream());
+      Debug.Log("[SERVER] Recieved data: " + message);
+      parseMessage(message, tcpClient);
     }
     
     Debug.Log("[SERVER] A client has disconnected");
-    LobbyController.current.RemovePlayer(tcpClient);
+    //todo: add a player left message instead of this
+    //LobbyController.current.RemovePlayer(tcpClient);
     tcpClient.Close();
   }
   
@@ -108,21 +79,29 @@ public class Server : MonoBehaviour {
   
   void sendMessageTo(string ipAddress, string message) {
     TcpClient client = playerIps [ipAddress];
-    NetworkService.sendTCPMessage(message, client);
+    NetworkService.sendTCPMessage(message, client.GetStream());
   }
   
   void parseMessage(string message, TcpClient client) {
-    string[] splitMsg = message.Split('|');
-    string route = splitMsg [0];
-    switch (route) {
-    case "join":
-      string ipAddress = splitMsg [1];
-      playerIps.Add(ipAddress, client);
-      LobbyController.current.UpdatePlayer(ipAddress, client);
-      break;
-    default:
-      break;
-    } 
+    string messageType = NetworkMessage.messageType(message);
+    if (messageType == JoinMessage.type) {
+      JoinMessage joinMsg = (JoinMessage) NetworkMessage.decodeMessage(message);
+      playerIps.Add(joinMsg.ipAddress, client);
+      Debug.Log("[SERVER] client " + joinMsg.ipAddress + " joined");
+      
+      // update everyone on who is online
+      broadcastMessage(message);
+    }
+  }
+  
+  string getIpAddressOfClient(TcpClient client) {
+    Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
+    while (enumerator.MoveNext()) {
+      if (enumerator.Current.Value == client) {
+        return enumerator.Current.Key;
+      }
+    }
+    throw new Exception ("Could not find ip address of client " + client);
   }
   
   /*

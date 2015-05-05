@@ -11,6 +11,7 @@ public class Client : MonoBehaviour {
   TcpClient tcpClient;
   bool connected = false;
   float timeToWaitForServer = 5f;
+  string ipAddress;
   
   IPEndPoint serverEndPoint;
 
@@ -65,8 +66,31 @@ public class Client : MonoBehaviour {
   void startTcpConnection (object o) {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
-    
-    NetworkService.sendTCPMessage("join|" + NetworkService.GetSelfIP(), tcpClient);
+    ipAddress = NetworkService.GetSelfIP();
+    JoinMessage joinMsg = new JoinMessage(ipAddress);
+    NetworkService.sendTCPMessage(joinMsg.encodeMessage(), tcpClient.GetStream());
+    Thread clientThread = new Thread (new ParameterizedThreadStart (listen));
+    clientThread.Start(tcpClient);
   }
   
+  void listen(object client) {
+    TcpClient tcpClient = (TcpClient)client;
+    
+    while (tcpClient.Connected) {
+      string message = NetworkService.readTCPMessage(tcpClient.GetStream());
+      Debug.Log("[CLIENT " + ipAddress + "] Recieved data: " + message);
+      parseMessage(message);
+    }
+    
+    Debug.Log("[CLIENT + " + ipAddress + "] disconnected");
+    tcpClient.Close();
+  }
+  
+  void parseMessage(string message) {
+    string messageType = NetworkMessage.messageType(message);
+    if (messageType == JoinMessage.type) {
+      JoinMessage joinMsg = (JoinMessage) NetworkMessage.decodeMessage(message);
+      LobbyController.current.UpdatePlayer(ipAddress);
+    }
+  }
 }

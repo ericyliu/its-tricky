@@ -6,12 +6,10 @@ public class Player
 {
 
   public string name;
-  public TcpClient client;
   public int lastPinged;
   
-  public Player (string name, TcpClient client) {
+  public Player (string name) {
     this.name = name;
-    this.client = client;
   }
   
   public override bool Equals (System.Object obj) {
