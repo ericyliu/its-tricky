@@ -24,8 +24,14 @@ public class LobbyController : MonoBehaviour {
   void Update() {
     // only refresh the list if it has changed
     if (previousPlayerListLength != lobby.onlinePlayers.Count) {
-      //Remove players on menu that are not in list
+      // have to do this stupid hoop jumping because you cannot modify a collection
+      // you are iterating over. solution from 
+      // http://stackoverflow.com/questions/2024179/c-sharp-collection-was-modified-enumeration-operation-may-not-execute
+      List<Transform> toDelete = new List<Transform>();
       foreach (Transform child in lobbyPanel.transform) {
+        toDelete.Add(child);
+      }
+      foreach (Transform child in toDelete) {
         GameObject.Destroy(child.gameObject);
       }
       
@@ -41,7 +47,7 @@ public class LobbyController : MonoBehaviour {
   }
   
   public void UpdatePlayers(string[] playerIps) {
-  Debug.Log("updating players");
+    Debug.Log("updating players");
     foreach (Player player in this.lobby.onlinePlayers) {
       lobby.onlinePlayers.Remove(player);
     }

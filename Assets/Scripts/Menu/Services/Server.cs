@@ -20,6 +20,7 @@ public class Server : Networker {
   private Dictionary<string, TcpClient> playerIps;
   UdpClient udpClient;
   TcpListener tcpListener;
+  
 
   void Awake() {
     GameObject.DontDestroyOnLoad(gameObject);
@@ -62,7 +63,7 @@ public class Server : Networker {
     while (true) {
       TcpClient client = tcpListener.AcceptTcpClient();
       Debug.Log("[SERVER] New Client Connected");
-      startNetworkListening(client);
+      startNetworkListening(client, "SERVER");
     }
   }
   
@@ -75,8 +76,9 @@ public class Server : Networker {
   void sendMessageTo(string ipAddress, NetworkMessage message) {
     TcpClient client = playerIps [ipAddress];
     try {
-      NetworkService.sendTCPMessage(message, client.GetStream());
+      sendTCPMessage(message);
     } catch (SocketException e) {
+      Debug.LogError("[SERVER] " + e);
       closeConnection(ipAddress);      
     }
   }

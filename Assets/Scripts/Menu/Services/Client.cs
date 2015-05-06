@@ -70,10 +70,10 @@ public class Client : Networker {
   void startTcpConnection() {
     Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
+    startNetworkListening(tcpClient, "CLIENT " + this.ipAddress);
     ipAddress = NetworkService.GetSelfIP();
     PlayerUpdateMessage joinMsg = new PlayerUpdateMessage (ipAddress, "join");
-    NetworkService.sendTCPMessage(joinMsg, tcpClient.GetStream());
-    startNetworkListening(tcpClient);
+    sendTCPMessage(joinMsg);
   }
   
   void parseMessage(string message) {

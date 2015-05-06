@@ -5,9 +5,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.IO;
+using System.Threading;
 
 public class NetworkService {
-
   public static string GetSelfIP() {
     IPHostEntry host;
     string localIP = "?";
@@ -25,28 +25,5 @@ public class NetworkService {
     udpClient.Send(bytes, bytes.Length, endpoint);
   }
   
-  public static void sendTCPMessage(NetworkMessage message, NetworkStream clientStream) {
-    BinaryWriter writer = null;
-    try {
-      writer = new BinaryWriter(clientStream);
-      writer.Write(message.encodeMessage());
-    } catch (Exception e) {
-      Debug.Log(e);
-      throw;
-    }
-  }
-  
-  public static string readTCPMessage(NetworkStream clientStream) {
-    BinaryReader reader = null;
-    string message = "";
-    try {
-      reader = new BinaryReader (clientStream);
-      message = reader.ReadString();
-    } catch (Exception e) {
-      Debug.Log(e);
-      throw;
-    }
-    
-    return message;
-  }
+
 }
