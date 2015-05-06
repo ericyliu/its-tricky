@@ -16,8 +16,6 @@ public class Server : Networker {
   public float clientPingTime = 3f;
   IPEndPoint broadcastEndPoint;
 
-  // index in array indicates the player number  
-  private Dictionary<string, TcpClient> playerIps;
   UdpClient udpClient;
   TcpListener tcpListener;
   
@@ -63,7 +61,7 @@ public class Server : Networker {
     while (true) {
       TcpClient client = tcpListener.AcceptTcpClient();
       Debug.Log("[SERVER] New Client Connected");
-      startNetworkListening(client, "SERVER");
+      startNetworkListening(client, "SERVER accept client");
     }
   }
   
@@ -76,6 +74,7 @@ public class Server : Networker {
   void sendMessageTo(string ipAddress, NetworkMessage message) {
     TcpClient client = playerIps [ipAddress];
     try {
+      Debug.Log("[SERVER] to: " + ipAddress + " message " + message.encodeMessage());
       sendTCPMessage(message);
     } catch (SocketException e) {
       Debug.LogError("[SERVER] " + e);

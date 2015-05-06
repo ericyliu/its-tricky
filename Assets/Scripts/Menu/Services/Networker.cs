@@ -8,17 +8,18 @@ using System.Threading;
 using System.IO;
 
 public class Networker : MonoBehaviour {
-  public static int serverPort = 5555;
-  private Queue queuedNetworkData = new Queue ();
   public static Mutex queueMutex = new Mutex ();
-  private string debugData;
+  public static int serverPort = 5555;
   
+  // index in array indicates the player number  
+  public Dictionary<string, TcpClient> playerIps;
+  
+  private Queue queuedNetworkData = new Queue ();
+  private string debugData;
   private TcpClient tcpClient;
   private NetworkStream networkStream;
   private StreamReader networkStreamReader;
   private StreamWriter networkStreamWriter;
-  public Mutex readMutex = new Mutex ();
-  public Mutex writeMutex = new Mutex ();
 
   public void startNetworkListening(TcpClient tcpClient, string debugData) {
     this.tcpClient = tcpClient;
@@ -37,10 +38,8 @@ public class Networker : MonoBehaviour {
       try {
         Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " reading for " + this.debugData);
         string message = "";
-//        this.readMutex.WaitOne();
         message = this.networkStreamReader.ReadLine();
         Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " read for " + this.debugData + " || " + message);
-//        this.readMutex.ReleaseMutex();
         data.Key = message;
       } catch (Exception e) {
         Debug.LogError("IOException [" + this.debugData + "]: " + e);
@@ -71,11 +70,9 @@ public class Networker : MonoBehaviour {
       Debug.LogError("Need to run startNetworkListening before you can send messages");
     }
     try {
-//      this.writeMutex.WaitOne();
       Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " writing for " + this.debugData + " || " + message.encodeMessage());
       this.networkStreamWriter.WriteLine(message.encodeMessage());
       this.networkStreamWriter.Flush();
-//      this.writeMutex.ReleaseMutex();
     } catch (Exception e) {
       Debug.Log(e);
       throw;

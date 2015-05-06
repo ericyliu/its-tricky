@@ -41,6 +41,8 @@ public class Client : Networker {
         }
       }
     } 
+    
+    // start tcp connection here so its on the main thread
     if (shouldStartTcpConnection && !connected) {
       connected = true;
       startTcpConnection();
