@@ -8,6 +8,7 @@ using System.Threading;
 using System.IO;
 
 public class Networker : MonoBehaviour {
+  public static int serverPort = 5555;
   private Queue queuedNetworkData = new Queue ();
   public static Mutex queueMutex = new Mutex ();
   private string debugData;
@@ -30,12 +31,15 @@ public class Networker : MonoBehaviour {
   }
   
   void listen() {
+    Debug.Log("Created thread " + Thread.CurrentThread.ManagedThreadId + " for " + this.debugData);
     while (tcpClient.Connected) {
       NetworkerKV data = new NetworkerKV ();
       try {
+        Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " reading for " + this.debugData);
         string message = "";
 //        this.readMutex.WaitOne();
         message = this.networkStreamReader.ReadLine();
+        Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " read for " + this.debugData + " || " + message);
 //        this.readMutex.ReleaseMutex();
         data.Key = message;
       } catch (Exception e) {
@@ -68,6 +72,7 @@ public class Networker : MonoBehaviour {
     }
     try {
 //      this.writeMutex.WaitOne();
+      Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " writing for " + this.debugData + " || " + message.encodeMessage());
       this.networkStreamWriter.WriteLine(message.encodeMessage());
       this.networkStreamWriter.Flush();
 //      this.writeMutex.ReleaseMutex();
