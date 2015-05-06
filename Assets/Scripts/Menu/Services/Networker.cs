@@ -10,14 +10,14 @@ using System.IO;
 public class Networker : MonoBehaviour {
   private Queue queuedNetworkData = new Queue ();
   public static Mutex queueMutex = new Mutex ();
-  public static Mutex readMutex = new Mutex ();
-  public static Mutex writeMutex = new Mutex ();
   private string debugData;
   
   private TcpClient tcpClient;
   private NetworkStream networkStream;
   private StreamReader networkStreamReader;
   private StreamWriter networkStreamWriter;
+  public Mutex readMutex = new Mutex ();
+  public Mutex writeMutex = new Mutex ();
 
   public void startNetworkListening(TcpClient tcpClient, string debugData) {
     this.tcpClient = tcpClient;
@@ -34,7 +34,9 @@ public class Networker : MonoBehaviour {
       NetworkerKV data = new NetworkerKV ();
       try {
         string message = "";
+//        this.readMutex.WaitOne();
         message = this.networkStreamReader.ReadLine();
+//        this.readMutex.ReleaseMutex();
         data.Key = message;
       } catch (Exception e) {
         Debug.LogError("IOException [" + this.debugData + "]: " + e);
@@ -65,8 +67,10 @@ public class Networker : MonoBehaviour {
       Debug.LogError("Need to run startNetworkListening before you can send messages");
     }
     try {
+//      this.writeMutex.WaitOne();
       this.networkStreamWriter.WriteLine(message.encodeMessage());
       this.networkStreamWriter.Flush();
+//      this.writeMutex.ReleaseMutex();
     } catch (Exception e) {
       Debug.Log(e);
       throw;
