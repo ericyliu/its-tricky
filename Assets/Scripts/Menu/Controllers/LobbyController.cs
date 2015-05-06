@@ -48,9 +48,7 @@ public class LobbyController : MonoBehaviour {
   
   public void UpdatePlayers(string[] playerIps) {
     Debug.Log("updating players");
-    foreach (Player player in this.lobby.onlinePlayers) {
-      lobby.onlinePlayers.Remove(player);
-    }
+    lobby.onlinePlayers.RemoveAll(x => true);
     
     for (int i = 0; i < playerIps.Length; i++) {
       Debug.Log("adding player " + i + " " + playerIps [i]);
