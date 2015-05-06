@@ -18,6 +18,8 @@ public class Client : Networker {
   IPEndPoint serverEndPoint;
   float initTime;
 
+  private string serverIpAddress = "uninitialized server ip address";
+
   void Awake() {
     GameObject.DontDestroyOnLoad(gameObject);
     initTime = Time.timeSinceLevelLoad;
@@ -78,11 +80,17 @@ public class Client : Networker {
   void startTcpConnection() {
     Debug.Log("[CLIENT] Starting TCP Connection To Server : thread " + Thread.CurrentThread.ManagedThreadId);
     tcpClient.Connect(serverEndPoint);
+    this.server = tcpClient;
     startNetworkListening(tcpClient, "CLIENT " + this.ipAddress);
     ipAddress = NetworkService.GetSelfIP();
     PlayerUpdateMessage joinMsg = new PlayerUpdateMessage (ipAddress, "join");
     Debug.Log("About to send join message on thread " + Thread.CurrentThread.ManagedThreadId);
-    sendTCPMessage(joinMsg);
+    sendMessageToServer(joinMsg);
+  }
+  
+  void sendMessageToServer(NetworkMessage message) {
+    string serverIpAddress = "server";
+    sendMessageTo(serverIpAddress, message);
   }
   
   void parseMessage(string message) {

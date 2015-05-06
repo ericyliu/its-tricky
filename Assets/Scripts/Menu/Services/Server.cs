@@ -11,7 +11,6 @@ using System.IO;
 using System.Threading;
 
 public class Server : Networker {
-
   public float discoveryPingTime = 1f;
   public float clientPingTime = 3f;
   IPEndPoint broadcastEndPoint;
@@ -33,8 +32,6 @@ public class Server : Networker {
     
     Thread socketThread = new Thread (new ParameterizedThreadStart (startListening));
     socketThread.Start();
-    
-    playerIps = new Dictionary<string, TcpClient> ();
   }
   
   public void Update() {
@@ -70,18 +67,7 @@ public class Server : Networker {
       sendMessageTo(kv.Key, message);
     }
   }
-  
-  void sendMessageTo(string ipAddress, NetworkMessage message) {
-    TcpClient client = playerIps [ipAddress];
-    try {
-      Debug.Log("[SERVER] to: " + ipAddress + " message " + message.encodeMessage());
-      sendTCPMessage(message);
-    } catch (SocketException e) {
-      Debug.LogError("[SERVER] " + e);
-      closeConnection(ipAddress);      
-    }
-  }
-  
+ 
   void parseMessage(string message, TcpClient client) {
     string messageType = NetworkMessage.messageType(message);
     if (messageType == PlayerUpdateMessage.type) {
@@ -116,22 +102,6 @@ public class Server : Networker {
       }
     }
     throw new Exception ("Could not find ip address of client " + client);
-  }
-  
-  void closeConnection(string ipAddress) {
-    Debug.LogError("[SERVER] closing socket to ip address " + ipAddress);
-    TcpClient client = playerIps [ipAddress];
-    client.Close();
-    playerIps.Remove(ipAddress);
-    
-    broadcastMessage(new PlayerUpdateMessage (ipAddress, "leave"));
-    string[] ips = new string[playerIps.Count];
-    Dictionary<string, TcpClient>.Enumerator enumerator = playerIps.GetEnumerator();
-    int i = 0;
-    while (enumerator.MoveNext()) {
-      ips [i] = enumerator.Current.Key;
-      i++;
-    }
   }
   
   /*
