@@ -69,9 +69,11 @@ public class Server : Networker {
   }
  
   void parseMessage(string message, TcpClient client) {
-    string messageType = NetworkMessage.messageType(message);
-    if (messageType == PlayerUpdateMessage.type) {
-      PlayerUpdateMessage joinMsg = (PlayerUpdateMessage)NetworkMessage.decodeMessage(message);
+    NetworkMessage networkMessage = NetworkMessage.decodeMessage(message);
+    string messageType = networkMessage.thisMessageType();
+    
+    if (messageType == typeof(PlayerUpdateMessage).FullName) {
+      PlayerUpdateMessage joinMsg = (PlayerUpdateMessage)networkMessage;
       if (joinMsg.action == "join") {
         playerIps.Add(joinMsg.ipAddress, client);
       }
@@ -87,7 +89,7 @@ public class Server : Networker {
         i++;
       }
       broadcastMessage(new JoinBroadcastMessage (ips));
-    } else if (messageType == PingMessage.type) {
+    } else if (messageType == typeof(PingMessage).FullName) {
       Debug.Log("[SERVER] ping!");
     } else {
       Debug.LogError("[SERVER] could not parse message of type: " + messageType);

@@ -7,10 +7,8 @@ public abstract class NetworkMessage {
   public const char DATA_DELIMITER = '|';
   
   public abstract string encodeMessageData();
-
   public abstract string thisMessageType();
-  // also needs to implement   public static NetworkMessage decodeMessageData(string msgData) {
-  // but i cant fucking enforce static methods
+  public abstract void decodeMessageData(string msgData);
   
   public static string messageType(string msg) {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
@@ -24,24 +22,19 @@ public abstract class NetworkMessage {
   public static NetworkMessage decodeMessage(string msg) {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
     string type = splitMsg [0];
-    if (type == PlayerUpdateMessage.type) {
-      return PlayerUpdateMessage.decodeMessageData(splitMsg [1]);
-    } else if (type == JoinBroadcastMessage.type) {
-      return JoinBroadcastMessage.decodeMessageData(splitMsg [1]);
-    } else if (type == PingMessage.type) {
-      return PingMessage.decodeMessageData(splitMsg [1]);
-    } else {
-      Debug.LogError("Need to add code to decode new message type for message: " + msg);
-      return null;
-    }
+    NetworkMessage networkMessage = (NetworkMessage)Activator.CreateInstance(null, type).Unwrap();
+    networkMessage.decodeMessageData(splitMsg[1]);
+    return networkMessage;
   }
-  
 }
 
 public class PlayerUpdateMessage : NetworkMessage {
-  public static string type = "player_update";
   public string ipAddress;
   public string action;
+
+  public PlayerUpdateMessage () {
+  
+  }
 
   public PlayerUpdateMessage (string ipAddress, string action) {
     this.ipAddress = ipAddress;
@@ -53,18 +46,22 @@ public class PlayerUpdateMessage : NetworkMessage {
   }
 
   public override string thisMessageType() {
-    return PlayerUpdateMessage.type;
+    return typeof(PlayerUpdateMessage).FullName;
   }
 
-  public static NetworkMessage decodeMessageData(string msgData) {
+  public override void decodeMessageData(string msgData) {
     string[] splitString = msgData.Split(NetworkMessage.DATA_DELIMITER);
-    return new PlayerUpdateMessage (splitString[0], splitString[1]);
+    this.ipAddress = splitString[0];
+    this.action = splitString[1];
   }
 }
 
 public class JoinBroadcastMessage : NetworkMessage {
-  public static string type = "join_broadcast";
   public string[] ipAddresses;
+  
+  public JoinBroadcastMessage () {
+  
+  }
   
   public JoinBroadcastMessage (string[] ipAddresses) {
     this.ipAddresses = ipAddresses;
@@ -75,17 +72,16 @@ public class JoinBroadcastMessage : NetworkMessage {
   }
   
   public override string thisMessageType() {
-    return JoinBroadcastMessage.type;
+    return typeof(JoinBroadcastMessage).FullName;
   }
   
-  public static NetworkMessage decodeMessageData(string msgData) {
-    return new JoinBroadcastMessage (msgData.Split(NetworkMessage.DATA_DELIMITER));
+  public override void decodeMessageData(string msgData) {
+    this.ipAddresses = msgData.Split(NetworkMessage.DATA_DELIMITER);
   }
 }
 
-public class PingMessage : NetworkMessage {
-  public static string type = "ping";
-  
+public class PingMessage : NetworkMessage {  
+
   public PingMessage () {
   }
   
@@ -94,10 +90,9 @@ public class PingMessage : NetworkMessage {
   }
   
   public override string thisMessageType() {
-    return PingMessage.type;
+    return typeof(PingMessage).FullName;
   }
   
-  public static NetworkMessage decodeMessageData(string msgData) {
-    return new PingMessage();
+  public override void decodeMessageData(string msgData) {
   }
 }

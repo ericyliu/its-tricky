@@ -94,12 +94,14 @@ public class Client : Networker {
   }
   
   void parseMessage(string message) {
-    string messageType = NetworkMessage.messageType(message);
-    if (messageType == JoinBroadcastMessage.type) {
-      JoinBroadcastMessage jbm = (JoinBroadcastMessage)NetworkMessage.decodeMessage(message);
+    NetworkMessage networkMessage = NetworkMessage.decodeMessage(message);
+    string messageType = networkMessage.thisMessageType();
+  
+    if (messageType == typeof(JoinBroadcastMessage).FullName) {
+      JoinBroadcastMessage jbm = (JoinBroadcastMessage)networkMessage;
       this.connectedPlayerIps = jbm.ipAddresses;
       LobbyController.current.UpdatePlayers(this.connectedPlayerIps);
-    } else if (messageType == PingMessage.type) {
+    } else if (messageType == typeof(PingMessage).FullName) {
       Debug.Log("[CLIENT + " + this.ipAddress + "] ping!");
     } else {
       Debug.LogError("[CLIENT + " + this.ipAddress + "] could not parseMessage: " + message);
