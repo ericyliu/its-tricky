@@ -7,7 +7,6 @@ using UnityEngine;
 using System.Threading;
 
 public class Client : Networker {
-
   UdpClient udpClient;
   TcpClient tcpClient;
   bool connected = false;
@@ -17,8 +16,14 @@ public class Client : Networker {
   string[] connectedPlayerIps;
   IPEndPoint serverEndPoint;
   float initTime;
+  private string serverIpAddress = "server";
+  private ClientListener clientListener;
 
-  private string serverIpAddress = "uninitialized server ip address";
+  public void setClientListener(ClientListener listener) {
+    this.clientListener = listener;
+    int indexOfThisClient = Array.IndexOf(connectedPlayerIps, this.ipAddress);
+    this.clientListener.connectedPlayerIpsDidChange(this.connectedPlayerIps, indexOfThisClient);
+  }
 
   void Awake() {
     GameObject.DontDestroyOnLoad(gameObject);
@@ -30,7 +35,6 @@ public class Client : Networker {
     udpClient = new UdpClient (Config.udpPort);
     tcpClient = new TcpClient ();
     startListening();
-    Debug.Log("Main thread: " + Thread.CurrentThread.ManagedThreadId);
   }
   
   public void Update() {
@@ -48,6 +52,14 @@ public class Client : Networker {
     if (shouldStartTcpConnection && !connected) {
       connected = true;
       startTcpConnection();
+    }
+    
+    // grab all client messages and send them to server
+    if (this.clientListener != null) {
+      List<NetworkMessage> messagesToSend = this.clientListener.getMessagesToSend();
+      foreach (NetworkMessage message in messagesToSend) {
+        this.sendMessageToServer(message);
+      }
     }
     
     NetworkerKV data = safeGetNextMessage();
@@ -78,19 +90,17 @@ public class Client : Networker {
   }
   
   void startTcpConnection() {
-    Debug.Log("[CLIENT] Starting TCP Connection To Server : thread " + Thread.CurrentThread.ManagedThreadId);
+    Debug.Log("[CLIENT] Starting TCP Connection To Server");
     tcpClient.Connect(serverEndPoint);
     this.server = tcpClient;
     startNetworkListening(tcpClient, "CLIENT " + this.ipAddress);
     ipAddress = NetworkService.GetSelfIP();
     PlayerUpdateMessage joinMsg = new PlayerUpdateMessage (ipAddress, "join");
-    Debug.Log("About to send join message on thread " + Thread.CurrentThread.ManagedThreadId);
     sendMessageToServer(joinMsg);
   }
   
   void sendMessageToServer(NetworkMessage message) {
-    string serverIpAddress = "server";
-    sendMessageTo(serverIpAddress, message);
+    sendMessageTo(this.serverIpAddress, message);
   }
   
   void parseMessage(string message) {
@@ -101,10 +111,26 @@ public class Client : Networker {
       JoinBroadcastMessage jbm = (JoinBroadcastMessage)networkMessage;
       this.connectedPlayerIps = jbm.ipAddresses;
       LobbyController.current.UpdatePlayers(this.connectedPlayerIps);
+      if (jbm.ipAddresses.Length == 2) {
+        startDodger();
+      }
     } else if (messageType == typeof(PingMessage).FullName) {
       Debug.Log("[CLIENT + " + this.ipAddress + "] ping!");
     } else {
-      Debug.LogError("[CLIENT + " + this.ipAddress + "] could not parseMessage: " + message);
+      if (this.clientListener != null) {
+        this.clientListener.onMessage(networkMessage);
+      }
     }
   }
+  
+  void startDodger() {
+    Application.LoadLevel("harden");
+  }
+}
+
+public interface ClientListener {
+  void onMessage(NetworkMessage message);
+  List<NetworkMessage> getMessagesToSend();
+  // updates the listener when the number of players changes
+  void connectedPlayerIpsDidChange(string[] connectedPlayerIps, int playerIndex);
 }

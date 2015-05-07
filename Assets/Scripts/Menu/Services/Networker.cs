@@ -86,9 +86,7 @@ public class Networker : MonoBehaviour {
       this.networkStreamWriterMap.Add(ipAddress, writer);
     }
     try {
-      Debug.Log("[SERVER] to: " + ipAddress + " message " + message.encodeMessage());
       try {
-        Debug.Log("Thread " + Thread.CurrentThread.ManagedThreadId + " writing for " + this.debugData + " || " + message.encodeMessage());
         writer.WriteLine(message.encodeMessage());
         writer.Flush();
       } catch (Exception e) {
@@ -96,7 +94,7 @@ public class Networker : MonoBehaviour {
         throw;
       }
     } catch (SocketException e) {
-      Debug.LogError("[SERVER] " + e);
+      Debug.LogError("["+this.debugData+"] " + e);
     }
   }
 }

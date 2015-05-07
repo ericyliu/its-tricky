@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /*
  * structure of message
@@ -7,7 +8,7 @@ using System.Collections;
  * data: whatever
  */
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour, ClientListener {
   public Transform Player;
   public float playerObjectCenterOffsetX = 0;
   public float playerObjectCenterOffsetY = 0;
@@ -15,101 +16,150 @@ public class PlayerController : MonoBehaviour {
   private GameObject[] players;
   private int playerNumber = 0;
   private string previousState;
+  private List<NetworkMessage> messagesToSend = new List<NetworkMessage> ();
+  private string[] connectedPlayerIps;
+  private bool gameStarted;
 
   // Use this for initialization
-  void Start () {
-    createPlayers (3);
-    layoutPlayers ();
-    player player = getPlayer (playerNumber);
+  void Start() {
+  }
+  
+  void startNewGame() {
+    createPlayers(this.connectedPlayerIps.Length);
+    layoutPlayers();
+    player player = getPlayer(playerNumber);
     player.networkPlayer = false;
   }
   
   // Update is called once per frame
-  void Update () {
+  void Update() {
+    Client client = gameObject.GetComponent<Client>();
+    if (client == null) {
+      Debug.LogError("No client could be found. no networking");
+    }
+    
+    client.setClientListener(this);
+  
     // input logic
-    if (Input.GetKeyDown ("space")) {
+    if (Input.GetKeyDown("space")) {
       spacePressed = true;
     }
-    if (Input.GetKeyUp ("space")) {
+    if (Input.GetKeyUp("space")) {
       spacePressed = false;
     }
 
-    string serializedMsg = createDogderControlMessage (spacePressed).serialize ();
+    
+    string serializedMsg = createDogderControlMessage(spacePressed).encodeMessage();
     if (serializedMsg != previousState) {
       previousState = serializedMsg;
       // this is to make sure its still working locally. get rid of this once
       // networking is actually working
-      receiveControlMessage (serializedMsg);
+      //receiveControlMessage(serializedMsg);
     }
   }
 
-  GameObject createPlayer () {
-    Transform transform = GameObject.Instantiate (Player, Vector2.zero, Quaternion.identity) as Transform;
+  GameObject createPlayer() {
+    Transform transform = GameObject.Instantiate(Player, Vector2.zero, Quaternion.identity) as Transform;
     return transform.gameObject;
   }
 
-  void createPlayers (int n) {
+  void createPlayers(int n) {
     players = new GameObject[n];
     for (int i = 0; i < n; i++) {
-      players [i] = createPlayer ();
+      players [i] = createPlayer();
     }
   }
 
-  void layoutPlayers () {
+  void layoutPlayers() {
     int numPlayers = players.Length;
     for (int i = 0; i < numPlayers; i++) {
       GameObject player = players [i];
-      player.transform.position = new Vector2 (getPlayerXPosition (i, numPlayers), playerObjectCenterOffsetY);
+      player.transform.position = new Vector2 (getPlayerXPosition(i, numPlayers), playerObjectCenterOffsetY);
     }
   }
 
-  float getPlayerXPosition (int playerNumber, int totalPlayers) {
+  float getPlayerXPosition(int playerNumber, int totalPlayers) {
     float screenWidth = 10;
     float position = screenWidth * (1.0f * playerNumber + 1) / (1.0f * totalPlayers + 1);
     return position - screenWidth / 2.0f;
   }
 
-  player getPlayer (int n) {
+  player getPlayer(int n) {
     GameObject player = players [n];
-    return player.GetComponentInChildren<player> ();
+    return player.GetComponentInChildren<player>();
   }
 
-  DodgerUpdateMessage createDogderControlMessage (bool dodging) {
-    DodgerUpdateMessage msgData = new DodgerUpdateMessage ();
-    msgData.dodging = dodging;
-    msgData.playerNumber = playerNumber;
-    msgData.health = getPlayer (playerNumber).health;
-    msgData.serialize ();
-    return msgData;
+  DodgerUpdateMessage createDogderControlMessage(bool dodging) {
+    DodgerUpdateMessage message = new DodgerUpdateMessage ();
+    message.dodging = dodging;
+    message.playerNumber = playerNumber;
+    message.health = getPlayer(playerNumber).health;
+    this.messagesToSend.Add(message);
+    return message;
   }
 
-  void receiveControlMessage (string data) {
-    DodgerUpdateMessage msg = DodgerUpdateMessage.deserialize (data);
-    if (msg.playerNumber == playerNumber) {
-      Debug.LogError ("got a control message for self. somethings wrong");
+  void receiveControlMessage(DodgerUpdateMessage dum) {
+    player playerScript = getPlayer(dum.playerNumber);
+    playerScript.protect = dum.dodging;
+    playerScript.health = dum.health;
+  }
+  
+  // Implementing ClientListener
+  public void onMessage(NetworkMessage message) {
+    string messageType = message.thisMessageType();
+    if (messageType == typeof(DodgerUpdateMessage).FullName) {
+      receiveControlMessage((DodgerUpdateMessage)message);
+    } else {
+      Debug.LogError("Dodger PlayerController could not handle message " + message);
     }
-
-    player playerScript = getPlayer (msg.playerNumber);
-    playerScript.protect = spacePressed;
-    playerScript.health = msg.health;
+  }
+  
+  public List<NetworkMessage> getMessagesToSend() {
+    List<NetworkMessage> messagesToSendPointer = this.messagesToSend;
+    this.messagesToSend = new List<NetworkMessage> ();
+    return messagesToSendPointer;
+  }
+  
+  public void connectedPlayerIpsDidChange(string[] connectedPlayerIps, int playerIndex) {
+    this.connectedPlayerIps = connectedPlayerIps;
+    this.playerNumber = playerIndex;
+    if (!this.gameStarted) {
+      this.gameStarted = true;
+      startNewGame();
+    }
   }
 }
 
-public class DodgerUpdateMessage {
+public class DodgerUpdateMessage : NetworkMessage {
+  
   public bool dodging;
   public int health;
   public int playerNumber;
 
-  public string serialize () {
-    return dodging + "|" + health + "|" + playerNumber;
+  public DodgerUpdateMessage () {
+  
   }
 
-  public static DodgerUpdateMessage deserialize (string msg) {
-    string[] splitMsg = msg.Split ('|');
-    DodgerUpdateMessage obj = new DodgerUpdateMessage ();
-    obj.dodging = "true" == splitMsg [0];
-    obj.health = int.Parse (splitMsg [1]);
-    obj.playerNumber = int.Parse (splitMsg [2]);
-    return obj;
+  public DodgerUpdateMessage (bool dodging, int health, int playerNumber) {
+    this.dodging = dodging;
+    this.health = health;
+    this.playerNumber = playerNumber;
+  }
+
+  public override string encodeMessageData() {
+    return dodging + NetworkMessage.DATA_DELIMITER.ToString() + 
+      health + NetworkMessage.DATA_DELIMITER.ToString() + 
+      playerNumber;
+  }
+
+  protected override void decodeMessageData(string msgData) {
+    string[] splitMsg = msgData.Split(NetworkMessage.DATA_DELIMITER);
+    this.dodging = "true" == splitMsg [0];
+    this.health = int.Parse(splitMsg [1]);
+    this.playerNumber = int.Parse(splitMsg [2]);
+  }
+  
+  public override string thisMessageType() {
+    return typeof(DodgerUpdateMessage).FullName;
   }
 }

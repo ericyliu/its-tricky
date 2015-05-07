@@ -8,7 +8,7 @@ public abstract class NetworkMessage {
   
   public abstract string encodeMessageData();
   public abstract string thisMessageType();
-  public abstract void decodeMessageData(string msgData);
+  protected abstract void decodeMessageData(string msgData);
   
   public static string messageType(string msg) {
     string[] splitMsg = msg.Split(TYPE_DELIMITER);
@@ -49,7 +49,7 @@ public class PlayerUpdateMessage : NetworkMessage {
     return typeof(PlayerUpdateMessage).FullName;
   }
 
-  public override void decodeMessageData(string msgData) {
+  protected override void decodeMessageData(string msgData) {
     string[] splitString = msgData.Split(NetworkMessage.DATA_DELIMITER);
     this.ipAddress = splitString[0];
     this.action = splitString[1];
@@ -75,7 +75,7 @@ public class JoinBroadcastMessage : NetworkMessage {
     return typeof(JoinBroadcastMessage).FullName;
   }
   
-  public override void decodeMessageData(string msgData) {
+  protected override void decodeMessageData(string msgData) {
     this.ipAddresses = msgData.Split(NetworkMessage.DATA_DELIMITER);
   }
 }
@@ -93,6 +93,6 @@ public class PingMessage : NetworkMessage {
     return typeof(PingMessage).FullName;
   }
   
-  public override void decodeMessageData(string msgData) {
+  protected override void decodeMessageData(string msgData) {
   }
 }
