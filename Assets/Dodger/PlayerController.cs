@@ -33,7 +33,8 @@ public class PlayerController : MonoBehaviour, ClientListener {
   
   // Update is called once per frame
   void Update() {
-    Client client = gameObject.GetComponent<Client>();
+    GameObject networkingObject = GameObject.Find("Networking");
+    Client client = networkingObject.GetComponent<Client>();
     if (client == null) {
       Debug.LogError("No client could be found. no networking");
     }
@@ -47,10 +48,13 @@ public class PlayerController : MonoBehaviour, ClientListener {
     if (Input.GetKeyUp("space")) {
       spacePressed = false;
     }
+    Debug.Log("space pressed " + spacePressed);
 
-    
-    string serializedMsg = createDogderControlMessage(spacePressed).encodeMessage();
+    DodgerUpdateMessage dum = createDodgerControlMessage(spacePressed);
+    string serializedMsg = dum.encodeMessage();
     if (serializedMsg != previousState) {
+      Debug.Log("----------------------------------------------------");
+      this.messagesToSend.Add(dum);
       previousState = serializedMsg;
       // this is to make sure its still working locally. get rid of this once
       // networking is actually working
@@ -89,16 +93,16 @@ public class PlayerController : MonoBehaviour, ClientListener {
     return player.GetComponentInChildren<player>();
   }
 
-  DodgerUpdateMessage createDogderControlMessage(bool dodging) {
+  DodgerUpdateMessage createDodgerControlMessage(bool dodging) {
     DodgerUpdateMessage message = new DodgerUpdateMessage ();
     message.dodging = dodging;
     message.playerNumber = playerNumber;
     message.health = getPlayer(playerNumber).health;
-    this.messagesToSend.Add(message);
     return message;
   }
 
   void receiveControlMessage(DodgerUpdateMessage dum) {
+    Debug.Log("Getting DodgerUpdateMessage for player " + dum.playerNumber +". i am " + this.playerNumber);
     player playerScript = getPlayer(dum.playerNumber);
     playerScript.protect = dum.dodging;
     playerScript.health = dum.health;
@@ -154,7 +158,7 @@ public class DodgerUpdateMessage : NetworkMessage {
 
   protected override void decodeMessageData(string msgData) {
     string[] splitMsg = msgData.Split(NetworkMessage.DATA_DELIMITER);
-    this.dodging = "true" == splitMsg [0];
+    this.dodging = "True" == splitMsg [0];
     this.health = int.Parse(splitMsg [1]);
     this.playerNumber = int.Parse(splitMsg [2]);
   }

@@ -36,8 +36,9 @@ public class Server : Networker {
   
   public void Update() {
     NetworkerKV data = safeGetNextMessage();
-    if (data != null) {
+    while (data != null) {
       parseMessage(data.Key, data.Value);
+      data = safeGetNextMessage();
     }
   }
 
@@ -92,7 +93,7 @@ public class Server : Networker {
     } else if (messageType == typeof(PingMessage).FullName) {
       Debug.Log("[SERVER] ping!");
     } else {
-      Debug.LogError("[SERVER] could not parse message of type: " + messageType);
+      broadcastMessage(networkMessage);
     }
   }
   
