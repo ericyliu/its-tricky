@@ -20,21 +20,25 @@ public class Server : Networker {
   
 
   void Awake() {
+    base.Awake ();
     GameObject.DontDestroyOnLoad(gameObject);
   }
 
   void Start() {
+    base.Start ();
+    this.udpClient = new UdpClient (Config.tcpPort);
+
     //Start UDP Broadcaster
-    udpClient = new UdpClient ();
     broadcastEndPoint = new IPEndPoint (IPAddress.Broadcast, Config.udpPort);
     InvokeRepeating("sendDiscoveryPing", 0f, discoveryPingTime);
     InvokeRepeating("pingEveryone", 0f, discoveryPingTime);
-    
+
     Thread socketThread = new Thread (new ParameterizedThreadStart (startListening));
     socketThread.Start();
   }
   
   public void Update() {
+    base.Update ();
     NetworkerKV data = safeGetNextMessage();
     while (data != null) {
       parseMessage(data.Key, data.Value);
@@ -47,6 +51,7 @@ public class Server : Networker {
   }
   
   void pingEveryone() {
+    Debug.Log ("pinging everyone");
     broadcastMessage(new PingMessage ());
   }
   
@@ -107,38 +112,7 @@ public class Server : Networker {
     throw new Exception ("Could not find ip address of client " + client);
   }
   
-  /*
-  // http://stackoverflow.com/questions/12019528/get-set-and-value-keyword-in-c-net
-  bool IsConnected(TcpClient client) {
-    try {
-      if (client != null && client.Client != null && client.Client.Connected) {
-        /* pear to the documentation on Poll:
-                * When passing SelectMode.SelectRead as a parameter to the Poll method it will return 
-                * -either- true if Socket.Listen(Int32) has been called and a connection is pending;
-                * -or- true if data is available for reading; 
-                * -or- true if the connection has been closed, reset, or terminated; 
-                * otherwise, returns false
-                * /
-          
-        // Detect if client disconnected
-        if (client.Client.Poll(0, SelectMode.SelectRead)) {
-          byte[] buff = new byte[1];
-          if (client.Client.Receive(buff, SocketFlags.Peek) == 0) {
-            // Client disconnected
-            return false;
-          } else {
-            Debug.Log("-----1");
-            return true;
-          }
-        }
-        Debug.Log("-----2");
-        return true;
-      } else {
-        return false;
-      }
-    } catch {
-      return false;
-    }
+  override public void onConnectToServer() {
+
   }
-  */
 }
